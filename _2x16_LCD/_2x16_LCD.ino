@@ -23,12 +23,11 @@ void setup() {
   delay(5);                           // Required delay
   mySerial.print("RX Testing...");  // First line (will wrap if needed)
   mySerial.write(13);                 // Form feed
-//  mySerial.print("for 27977-RT LCD");   // Second line
+  mySerial.print("for 27977-RT LCD");   // Second line
 //  mySerial.write(212);                // Quarter note
 //  mySerial.write(220);                // A tone
   delay(3000);                        // Wait 3 seconds
-  mySerial.write(18);                 // Turn backlight off
-
+  //mySerial.write(18);                 // Turn backlight off
 }
 
 void loop() {
