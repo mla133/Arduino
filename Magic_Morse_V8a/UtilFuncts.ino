@@ -1,14 +1,28 @@
 
 // Utility Functions for Magic Morse: common to Nokia 6110 and parallel LCD, 2x16, etc.
+void setCursor(int col, int row)
+{
+    //rows and columns are zero-based, 128 puts cursor at line 0, col 0, 148 2nd line col 0...
+    int offset;
+    
+    if((col>15) || (row>1))
+      return;  //  2x16 display...shouldn't try to overrun...row or column -wise
+    if(row>0)
+      offset = 148;
+    else
+      offset = 128;
+      
+    digitalWrite(TxPin,col+offset);
+}
 
 void SendMorseLCD( char temp ) {
    Serial << temp;                      // to diagnostic channel
-   lcd.setCursor(nColumn, nRow);        // LCD position
+   setCursor(nColumn, nRow);        // LCD position
    lcd << temp;  ++nColumn;             // print to LCD
    if (nColumn > 15) {                  // are we pointing beyond end-of-line?
      nColumn = 0;                       // reset column
      nRow = ++nRow % 2;                 // reset line
-     lcd.setCursor(nColumn, nRow);      // set cursor location
+     setCursor(nColumn, nRow);      // set cursor location
      lcd.print(BlankLine[0]);           // blank line on LCD
      }
 }
@@ -31,9 +45,11 @@ void showtime(int Which) {
               Serial << (F("-(")) << (keyUP-keyDOWN) << (F(") "));
               break;
         case 3:    // Word break
-              Serial << (F(" \\ ")) << endl;
+              Serial << (F(" \\ "));
+              Serial.println();
               Serial << (F("Dit Avg = ")) << DitSum / DitCount << (F("[")) << DITmS << (F("]"));
-              Serial << (F("  Dah Avg = ")) << DahSum / DahCount << (F("[")) << DAHmS << (F("]")) << endl;
+              Serial << (F("  Dah Avg = ")) << DahSum / DahCount << (F("[")) << DAHmS << (F("]"));
+              Serial.println();
               DitSum = 0; DahSum = 0; DitCount = 0; DahCount = 0;
               break;
     }
@@ -44,11 +60,16 @@ void STATUS (void)
 {
     if (!digitalRead(VerbosePin)); {
       Serial << (F("DIT: "))            << DITmS      <<(F(" mS  "));
-      Serial << (F("DIT range:   >  ")) << quarterDIT << (F(" < ")) << halfDAH   << (F(" mS")) << endl;
+      Serial << (F("DIT range:   >  ")) << quarterDIT << (F(" < ")) << halfDAH   << (F(" mS"));
+      Serial.println();
       Serial << (F("DAH: "))            << DAHmS      <<(F(" mS  "));
-      Serial << (F("DAH range:   >= ")) << halfDAH    << (F(" < ")) << DITDAH    << (F(" mS")) << endl;
-      Serial << (F("Char Break:  >= ")) << DiDiDi     << (F(" < ")) << wordBreak << (F(" mS")) << endl;
-      Serial << (F("Word Break:  >= ")) << wordBreak  << (F(" mS")) << endl      << endl;
+      Serial << (F("DAH range:   >= ")) << halfDAH    << (F(" < ")) << DITDAH    << (F(" mS"));
+      Serial.println();
+      Serial << (F("Char Break:  >= ")) << DiDiDi     << (F(" < ")) << wordBreak << (F(" mS"));
+      Serial.println();
+      Serial << (F("Word Break:  >= ")) << wordBreak  << (F(" mS"));
+      Serial.println();
+      Serial.println();
     }
 }
 
@@ -109,12 +130,14 @@ char PARIS(byte Letter)
 
 void Paris( void )
 {
-  Serial << (F("WPM: "))            << WPM        << endl;
+  Serial << (F("WPM: "))            << WPM ;       
+  Serial.println();
   if (!digitalRead(VerbosePin)) STATUS();
-  Serial << (F("Printing PARIS on LCD display:")) << endl;
+  Serial << (F("Printing PARIS on LCD display:")) ;
+  Serial.println();
   for (int q = 0; q < 5;q++)
     { SendMorseLCD(PARIS(q)); }
-  Serial << endl;
+  Serial.println();
 }
 
 
@@ -146,23 +169,23 @@ void setWPM(byte WPM)
 {
   WPM = 5; setspeed(WPM);  // initialize to 10 for consistent behavior
   tone(toneOutPin, 1500);
-  nColumn = 0; nRow = 0;   lcd.setCursor(nColumn, nRow); lcd << BlankLine[0];
-    lcd.setCursor(nColumn, nRow);
+  nColumn = 0; nRow = 0;   setCursor(nColumn, nRow); lcd << BlankLine[0];
+    setCursor(nColumn, nRow);
     lcd.print(F("Auto Cycling WPM"));
     nRow = 1;  // move to second line
     Serial << (F("Waiting on operator to press Morse Key...")) << "\r";
-    lcd.setCursor(nColumn, nRow); lcd << BlankLine[0];
+    setCursor(nColumn, nRow); lcd << BlankLine[0];
     lcd.print(F("Release Key NOW!"));
     delay(2000);
     noTone(toneOutPin);
-    nRow = 0; lcd.setCursor(nColumn, nRow); lcd << BlankLine[0];
-    lcd.setCursor(nColumn, nRow);
+    nRow = 0; setCursor(nColumn, nRow); lcd << BlankLine[0];
+    setCursor(nColumn, nRow);
     lcd.print(F("LONG Dash:Record"));
-    nRow = 1; lcd.setCursor(nColumn, nRow); lcd << BlankLine[0];
+    nRow = 1; setCursor(nColumn, nRow); lcd << BlankLine[0];
     while(digitalRead(morseInPin)) {
       ++WPM; if (WPM > 40) WPM = 5;
       setspeed(WPM);
-      lcd.setCursor(nColumn, nRow);
+      setCursor(nColumn, nRow);
       lcd << (F(" WPM = ")) << WPM << BlankLine[0];    // YES... goes offscreen!
       delay(700);
     }  // end while
