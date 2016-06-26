@@ -35,7 +35,7 @@ long TimeStamp;  // misc. timer - millis() real-time reading
 char temp;
 // ITU (International Morse Code) decoding: The MM[] matrix is decoded in 6-elements to provide for prosigns
 // http://upload.wikimedia.org/wikipedia/en/thumb/5/5a/Morse_comparison.svg/350px-Morse_comparison.svg.png
-char MM[] PROGMEM = "_EISH5ee0TNDB6-0"    //   0 - 15      e == ERROR
+/*char MM[] PROGMEM = "_EISH5ee0TNDB6-0"    //   0 - 15      e == ERROR
                     "00ARLw0000MGZ700"    //  16 - 31      w == WAIT
                     "000UF0000i0KC000"    //  32 - 47      i == INVITE
                     "000WP000000O0800"    //  48 - 63
@@ -50,7 +50,7 @@ char MM[] PROGMEM = "_EISH5ee0TNDB6-0"    //   0 - 15      e == ERROR
                     "0000030000000000"    // 192 - 207
                     "0000000000000000"    // 208 - 223
                     "0000020000000000"    // 224 - 239
-                    "000001'000000000";   // 240 - 255
+                    "000001'000000000";   // 240 - 255 */
 
 
 void ReadMorseKeyState()

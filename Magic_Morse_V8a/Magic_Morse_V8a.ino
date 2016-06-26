@@ -44,7 +44,7 @@ byte nRow;                          // line count      (0-5 for NOKIA LCD)
 byte nColumn;                       // character count (0-11 for NOKIA LCD)
 byte ConsoleCount;                  // Serial character output counter
 boolean Verbose;                    // state of Pin#9
-char* PROGMEM BlankLine[]  = {"                "};
+//char* PROGMEM BlankLine[]  = {"                "};
 
 SoftwareSerial lcd = SoftwareSerial(255, TxPin);
 
@@ -89,8 +89,9 @@ void setup(void)
     // Set WPM default and write to EEPROM IF Morse Key is closed at this point...
     //if (!digitalRead(morseInPin) || WPM == 0 || WPM > 40) setWPM(WPM);
     WPM = 15;
-    nColumn = 0; nRow = 1;   setCursor(nColumn, nRow); lcd << BlankLine[0];       // clear lower row
-    nColumn = 0; nRow = 0;   setCursor(nColumn, nRow); lcd << BlankLine[0];       // clear upper row
+    lcd.write(12); // clear both rows
+    //nColumn = 0; nRow = 1;   setCursor(nColumn, nRow); lcd << BlankLine[0];       // clear lower row
+    //nColumn = 0; nRow = 0;   setCursor(nColumn, nRow); lcd << BlankLine[0];       // clear upper row
     setCursor(nColumn, nRow);
     delay(500);
     setspeed(WPM);

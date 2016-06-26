@@ -36,117 +36,123 @@ int CrtdVal[] = {
 // transfers a byte, a bit at a time, LSB first to the 9850 via serial DATA line
 void tfr_byte(byte data)
 {
-for (int i=0; i<8; i++, data>>=1) {
-digitalWrite(DATA, data & 0x01);
-pulseHigh(W_CLK); //after each bit sent, CLK is pulsed high
-}
+  for (int i=0; i<8; i++, data>>=1) 
+  {
+    digitalWrite(DATA, data & 0x01);
+    pulseHigh(W_CLK); //after each bit sent, CLK is pulsed high
+  }
 }
 // frequency calc from datasheet page 8 = <sys clock> * <frequency tuning word>/2^32
-void sendFrequency(double frequency) {
-int32_t freq = frequency * 4294967295/125000000; // note 125 MHz clock on 9850
-for (int b=0; b<4; b++, freq>>=8) {
-tfr_byte(freq & 0xFF);
+void sendFrequency(double frequency) 
+{
+  int32_t freq = frequency * 4294967295/125000000; // note 125 MHz clock on 9850
+  for (int b=0; b<4; b++, freq>>=8) {
+  tfr_byte(freq & 0xFF);
 }
 tfr_byte(0x000); // Final control byte, all 0 for 9850 chip
 pulseHigh(FQ_UD); // Done! Should see output
 }
 void setup() {
-// configure arduino data pins for output
-pinMode(FQ_UD, OUTPUT);
-pinMode(W_CLK, OUTPUT);
-pinMode(DATA, OUTPUT);
-pinMode(RESET, OUTPUT);
-pulseHigh(RESET);
-pulseHigh(W_CLK);
-pulseHigh(FQ_UD); // this pulse enables serial mode - Datasheet page 12 figure 10
-current_freq = Start_Freq;
-Serial.begin(9600);
+  // configure arduino data pins for output
+  pinMode(FQ_UD, OUTPUT);
+  pinMode(W_CLK, OUTPUT);
+  pinMode(DATA, OUTPUT);
+  pinMode(RESET, OUTPUT);
+  pulseHigh(RESET);
+  pulseHigh(W_CLK);
+  pulseHigh(FQ_UD); // this pulse enables serial mode - Datasheet page 12 figure 10
+  current_freq = Start_Freq;
+  Serial.begin(9600);
 }
 void loop() {
-int incomingByte = 0; // for incoming serial data
-bool RunCurve = false;
-if (Serial.available() > 0) {
-// read the incoming byte:
-while (Serial.available()){
-incomingByte = Serial.read();
-Serial.println(incomingByte);
+  int incomingByte = 0; // for incoming serial data
+  bool RunCurve = false;
+  if (Serial.available() > 0) {
+  // read the incoming byte:
+  while (Serial.available()){
+  incomingByte = Serial.read();
+  Serial.println(incomingByte);
 }
 RunCurve = !RunCurve;
 }
 else{
-Serial.println("Hit 'enter' Key to Start Scan");
-sendFrequency(1.0); // set AD9850 output to 1 Hz
-delay(200);
-RevOffSet = analogRead(A0);
-FwdOffSet = analogRead(A1);
-delay(2000);
+  Serial.println("Hit 'enter' Key to Start Scan");
+  sendFrequency(1.0); // set AD9850 output to 1 Hz
+  delay(200);
+  RevOffSet = analogRead(A0);
+  FwdOffSet = analogRead(A1);
+  delay(2000);
 }
 while (RunCurve){
 RunCurve = PrintNextPoint(RunCurve);
 }
 }
 //*******************************************************//
-bool PrintNextPoint(bool RunCurve){
-double FWD = 0.0;
-double REV = 0.0;
-double VSWR;
-double EffOhms;
-if (current_freq > End_Freq){
-current_freq = Start_Freq;
-RunCurve = !RunCurve;
-Serial.println("Scan Complete");
-return RunCurve;
+bool PrintNextPoint(bool RunCurve)
+{
+  double FWD = 0.0;
+  double REV = 0.0;
+  double VSWR;
+  double EffOhms;
+  if (current_freq > End_Freq)
+  {
+    current_freq = Start_Freq;
+    RunCurve = !RunCurve;
+    Serial.println("Scan Complete");
+    return RunCurve;
+  }
+  sendFrequency(current_freq); // freq
+  delay(100);
+  // Read the forawrd and reverse voltages
+  for (int i=0; i<70; i++) 
+  {
+    REV += (analogRead(A0)-RevOffSet);
+    FWD += (analogRead(A1)-FwdOffSet);
+  }
+  REV = REV/70.0;
+  FWD = FWD/70.0;
+  REV = (FwdOpAmpGain*REV)/RevOpAmpGain; // apply Op Amp Gain loop compensation
+  REV = CorrectReading(REV);// now using table apply Small Signal correction value
+  FWD = (RevSCVal*FWD)/FwdSCVal;// apply "Short Circuit" offset
+  FWD = CorrectReading(FWD);// now using table apply Small Signal correction value
+  if(REV>=FWD)
+  {
+    // To avoid a divide by zero or negative VSWR then set to max 999
+    VSWR = 999;
+  }
+  else
+  {
+    // Calculate VSWR
+    VSWR = ((FWD+REV)/(FWD-REV));
+  }
+  if(FWD>=115) EffOhms = VSWR*47.0;//FWD>=94
+  else EffOhms = 47.0/VSWR;
+  
+  // Send current line back to PC over serial bus
+  Serial.print(int(current_freq/1000));
+  Serial.print(",KHz VSWR:, ");
+  Serial.print(VSWR); //Serial.print(int(VSWR*1000));
+  Serial.print(", FWD: ");
+  Serial.print(FWD);
+  Serial.print(" REV: ");
+  Serial.print(REV);
+  Serial.print(" RevOffSet: ");
+  Serial.print(RevOffSet);
+  Serial.print(" FwdOffSet: ");
+  Serial.print(FwdOffSet);
+  Serial.print("; Ohms: ");
+  Serial.print(EffOhms);
+  Serial.println("");
+  current_freq += Step_Freq;
+  return RunCurve;
 }
-sendFrequency(current_freq); // freq
-delay(100);
-// Read the forawrd and reverse voltages
-for (int i=0; i<70; i++) {
-REV += (analogRead(A0)-RevOffSet);
-FWD += (analogRead(A1)-FwdOffSet);
-}
-REV = REV/70.0;
-FWD = FWD/70.0;
-REV = (FwdOpAmpGain*REV)/RevOpAmpGain; // apply Op Amp Gain loop compensation
-REV = CorrectReading(REV);// now using table apply Small Signal correction value
-FWD = (RevSCVal*FWD)/FwdSCVal;// apply "Short Circuit" offset
-FWD = CorrectReading(FWD);// now using table apply Small Signal correction value
-if(REV>=FWD){
-// To avoid a divide by zero or negative VSWR then set to max 999
-VSWR = 999;
-}else{
-// Calculate VSWR
-VSWR = ((FWD+REV)/(FWD-REV));
-}
-if(FWD>=115
-) EffOhms = VSWR*47.0;//FWD>=94
-else EffOhms = 47.0/VSWR;
-// Send current line back to PC over serial bus
-Serial.print(int(current_freq/1000));
-Serial.print(",KHz VSWR:, ");
-Serial.print(VSWR); //Serial.print(int(VSWR*1000));
-Serial.print(", FWD: ");
-Serial.print(FWD);
-Serial.print(" REV: ");
-Serial.print(REV);
-Serial.print(" RevOffSet: ");
-Serial.print(RevOffSet);
-Serial.print(" FwdOffSet: ");
-Serial.print(FwdOffSet);
-Serial.print("; Ohms: ");
-Serial.print(EffOhms);
-Serial.println("");
-current_freq += Step_Freq;
-return RunCurve;
-}
-double CorrectReading(float ReadVal){
-// Serial.println(ReadVal);
-// if (ReadVal > 263)return ReadVal;// if (ReadVal > 0)return ReadVal;//
-// return CrtdVal[ReadVal];
-if (ReadVal > 70)return 0.8*ReadVal+57;// if (ReadVal > 0)return ReadVal;//
-if (ReadVal < 13)return 3.6*(ReadVal*ReadVal)/15;
-float CalcVal =1.1*( 8+(2.1*ReadVal)-((ReadVal*ReadVal)*10.7/1000));
-return CalcVal;
-//if (ReadVal < 15) return 2.5*ReadVal;// if (ReadVal > 0)return ReadVal;//
-// float CalcVal = (2.5*15)-(15*0.9)+(0.9*ReadVal);
-// return CalcVal;
+double CorrectReading(float ReadVal)
+{
+  if (ReadVal > 70)
+    return 0.8*ReadVal+57;// if (ReadVal > 0)return ReadVal;//
+  if (ReadVal < 13)
+    return 3.6*(ReadVal*ReadVal)/15;
+    
+  float CalcVal =1.1*( 8+(2.1*ReadVal)-((ReadVal*ReadVal)*10.7/1000));
+  return CalcVal;
 }
