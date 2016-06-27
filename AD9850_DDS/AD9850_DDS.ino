@@ -6,15 +6,23 @@
 * 9850 datasheet at http://www.analog.com/static/imported-files/data_sheets/AD9850.pdf
 * Use freely
 */
+
+#include <SoftwareSerial.h>
+
 #define W_CLK 8 // Pin 8 - connect to AD9850 module word load clock pin (CLK)
 #define FQ_UD 9 // Pin 9 - connect to freq update pin (FQ)
 #define DATA 10 // Pin 10 - connect to serial data load pin (DATA)
 #define RESET 11 // Pin 11 - connect to reset pin (RST).
 #define pulseHigh(pin) {digitalWrite(pin, HIGH); digitalWrite(pin, LOW); }
+#define TxPin 6
 double Start_Freq = 2.0e6;// 6.8e6; //start Freq; in Mhz
-double End_Freq = 23.0e6;//7.425e6; //End Scan Freq; in Mhz
+double End_Freq = 3.0e6;//7.425e6; //End Scan Freq; in Mhz
 double Step_Freq = 25000; //Step Freq; in Hz
 double current_freq;
+float minSWR = 999;
+float maxSWR = 0;
+float minFreq = 0;
+float maxFreq = 0;
 int FwdOffSet;
 int RevOffSet;
 int FwdSCVal = 30;// initialially set to 1; then set to reading found when antenna leg of bridge is shorted; Diode sensitivity compensation
@@ -33,6 +41,20 @@ int CrtdVal[] = {
 215, 216, 216, 217, 218, 218, 219, 220, 220, 221, 221, 222, 223, 223, 224, 225, 225, 226, 226, 227, 228, 228, 229, 229, 230, 230, 231, 232, 232, 233, 233,
 234, 234, 235, 235
 };
+
+SoftwareSerial lcd = SoftwareSerial(255, TxPin);
+char* numToAscii(double num)
+{
+        // Takes a double floating point number in, returns an ascii string with up to 1/1000 precision
+        char ascii[32];
+        int frac;
+        frac=(unsigned int)(num*100)%100;  // get 2 numbers to the right of the decimal point
+        itoa((int)num,ascii,10);
+        strcat(ascii,".");
+        itoa(frac,&ascii[strlen(ascii)],10);  // put frac after decimal
+        return ascii;
+}
+
 // transfers a byte, a bit at a time, LSB first to the 9850 via serial DATA line
 void tfr_byte(byte data)
 {
@@ -63,6 +85,22 @@ void setup() {
   pulseHigh(FQ_UD); // this pulse enables serial mode - Datasheet page 12 figure 10
   current_freq = Start_Freq;
   Serial.begin(9600);
+  
+  pinMode(TxPin, OUTPUT);
+  digitalWrite(TxPin, HIGH);
+  lcd.begin(9600);
+  delay(100);
+  lcd.write(12); // Clear
+  lcd.write(17); // Turn backlight on
+  delay(5); // Required delay
+  lcd.print("Analysis Range"); // First line
+  lcd.write(13); // Form feed
+  lcd.print(Start_Freq/1000); // Second line
+  lcd.print("-");
+  lcd.print(End_Freq/1000);
+  delay(3000); // Wait 3 seconds
+  //lcd.write(18); // Turn backlight off
+
 }
 void loop() 
 {
@@ -86,12 +124,22 @@ void loop()
     RevOffSet = analogRead(A0);
     FwdOffSet = analogRead(A1);
     delay(2000);
+    lcd.write(12);
+    delay(5);
+    lcd.print(minSWR);
+    lcd.print("/");
+    lcd.print(maxSWR);
+    lcd.write(13);
+    lcd.print(int(minFreq/1000));
+    lcd.print("/");
+    lcd.print(int(maxFreq/1000)); 
   }
   while (RunCurve)
   {
     RunCurve = PrintNextPoint(RunCurve);
   }
 }
+
 //*******************************************************//
 bool PrintNextPoint(bool RunCurve)
 {
@@ -99,6 +147,7 @@ bool PrintNextPoint(bool RunCurve)
   double REV = 0.0;
   double VSWR;
   double EffOhms;
+  
   if (current_freq > End_Freq)
   {
     current_freq = Start_Freq;
@@ -129,6 +178,17 @@ bool PrintNextPoint(bool RunCurve)
   {
     // Calculate VSWR
     VSWR = ((FWD+REV)/(FWD-REV));
+    if(VSWR<minSWR) 
+    {
+      minSWR = VSWR;
+      minFreq = current_freq;
+    }
+    if(VSWR>=maxSWR) 
+    {
+      maxSWR = VSWR;
+      maxFreq = current_freq;
+    }
+    
   }
   if(FWD>=115) EffOhms = VSWR*47.0;//FWD>=94
   else EffOhms = 47.0/VSWR;
@@ -141,13 +201,25 @@ bool PrintNextPoint(bool RunCurve)
   Serial.print(FWD);
   Serial.print(" REV: ");
   Serial.print(REV);
-  Serial.print(" RevOffSet: ");
-  Serial.print(RevOffSet);
-  Serial.print(" FwdOffSet: ");
-  Serial.print(FwdOffSet);
-  Serial.print("; Ohms: ");
-  Serial.print(EffOhms);
+//  Serial.print(" RevOffSet: ");
+//  Serial.print(RevOffSet);
+//  Serial.print(" FwdOffSet: ");
+//  Serial.print(FwdOffSet);
+//  Serial.print("; Ohms: ");
+//  Serial.print(EffOhms);
+//  Serial.println("");
+  Serial.print(" MIN: ");
+  Serial.print(minSWR);
+  Serial.print(" MAX: ");
+  Serial.print(maxSWR);
   Serial.println("");
+  lcd.write(12);
+  delay(5);
+  lcd.print(int(current_freq/1000));
+  lcd.print(" KHz");
+  lcd.write(13);
+  lcd.print("SWR: ");
+  lcd.print(VSWR);
   current_freq += Step_Freq;
   return RunCurve;
 }
