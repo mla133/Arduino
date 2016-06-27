@@ -64,28 +64,33 @@ void setup() {
   current_freq = Start_Freq;
   Serial.begin(9600);
 }
-void loop() {
+void loop() 
+{
   int incomingByte = 0; // for incoming serial data
   bool RunCurve = false;
-  if (Serial.available() > 0) {
-  // read the incoming byte:
-  while (Serial.available()){
-  incomingByte = Serial.read();
-  Serial.println(incomingByte);
-}
-RunCurve = !RunCurve;
-}
-else{
-  Serial.println("Hit 'enter' Key to Start Scan");
-  sendFrequency(1.0); // set AD9850 output to 1 Hz
-  delay(200);
-  RevOffSet = analogRead(A0);
-  FwdOffSet = analogRead(A1);
-  delay(2000);
-}
-while (RunCurve){
-RunCurve = PrintNextPoint(RunCurve);
-}
+  if (Serial.available() > 0) 
+  {
+    // read the incoming byte:
+    while (Serial.available())
+    {
+      incomingByte = Serial.read();
+      Serial.println(incomingByte);
+    }
+    RunCurve = !RunCurve;
+  }
+  else  
+  {
+    Serial.println("Hit 'enter' Key to Start Scan");
+    sendFrequency(1.0); // set AD9850 output to 1 Hz
+    delay(200);
+    RevOffSet = analogRead(A0);
+    FwdOffSet = analogRead(A1);
+    delay(2000);
+  }
+  while (RunCurve)
+  {
+    RunCurve = PrintNextPoint(RunCurve);
+  }
 }
 //*******************************************************//
 bool PrintNextPoint(bool RunCurve)
