@@ -58,6 +58,7 @@ void loop(){
     digitalWrite(TxPin,HIGH);
     tone(sidetonePin,sidetoneFreq);
   }
+
   else {
     digitalWrite(TxPin,LOW);
     noTone(sidetonePin);
