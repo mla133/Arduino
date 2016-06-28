@@ -6,6 +6,8 @@
  m0xpd
  shack.nasties 'at Gee Male dot com'
  
+ KC3EYS modified 6/28/16
+ 
  Pins 6 & 7 connected to a paddle...
    pin 6 is the 'dit' key (usually the left)
    pin 7 is the 'dah' key (usually the right)
