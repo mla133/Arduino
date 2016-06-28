@@ -33,7 +33,8 @@ int ditState = 0;
 int dahState = 0;
 int str8State = 0;
 unsigned sidetoneFreq=600;
-int ditLength = 75;             // dit length in milliseconds
+int wpm = 10;                    // Setting WPM spacing for dit/dah
+int ditLength = (int) 1200/wpm;  // dit length in milliseconds
 int dahLength = 3 * ditLength;
 int LastElement = 0;            // code for the last element sent...
                                 // 0 :- space
