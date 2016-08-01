@@ -6,7 +6,6 @@ Revision 2.1 - Matt Allen KC3EYS --> Removed Rotary switch code, updated to seri
 
 // Include the library code
 #include <SoftwareSerial.h>
-#include <EEPROM.h>
 
 //Setup some items
 #define W_CLK 8   // Pin 8 - connect to AD9850 module word load clock pin (CLK)
@@ -14,8 +13,9 @@ Revision 2.1 - Matt Allen KC3EYS --> Removed Rotary switch code, updated to seri
 #define DATA 10   // Pin 10 - connect to serial data load pin (DATA)
 #define RESET 11  // Pin 11 - connect to reset pin (RST) 
 #define pulseHigh(pin) {digitalWrite(pin, HIGH); digitalWrite(pin, LOW); }
-Rotary r = Rotary(2,3); // sets the pins the rotary encoder uses.  Must be interrupt pins.
-LiquidCrystal lcd(12, 13, 7, 6, 5, 4); // I used an odd pin combination because I need pin 2 and 3 for the interrupts.
+#define TX_PIN 6
+#define LED_PIN 13
+
 int_fast32_t rx=7200000; // Starting frequency of VFO
 int_fast32_t rx2=1; // variable to hold the updated frequency
 int_fast32_t increment = 10; // starting VFO update increment in HZ.
@@ -25,21 +25,28 @@ int  hertzPosition = 5;
 byte ones,tens,hundreds,thousands,tenthousands,hundredthousands,millions ;  //Placeholders
 String freq; // string to hold the frequency
 int_fast32_t timepassed = millis(); // int to hold the arduino miilis since startup
-int memstatus = 1;  // value to notify if memory is current or old. 0=old, 1=current.
+//int ForceFreq = 1;  // Change this to 0 after you upload and run a working sketch to activate the EEPROM memory.  YOU MUST PUT THIS BACK TO 0 AND UPLOAD THE SKETCH AGAIN AFTER STARTING FREQUENCY IS SET!
 
-
-
-
-
-int ForceFreq = 1;  // Change this to 0 after you upload and run a working sketch to activate the EEPROM memory.  YOU MUST PUT THIS BACK TO 0 AND UPLOAD THE SKETCH AGAIN AFTER STARTING FREQUENCY IS SET!
-
-
-
+SoftwareSerial lcd = SoftwareSerial(255, TX_PIN);
 
 void setup() {
+  
+  Serial.begin(9600);
+  pinMode(TX_PIN, OUTPUT);
+  digitalWrite(TX_PIN, HIGH);
+  lcd.begin(9600);
+  delay(100);
+  lcd.write(12); // Clear
+  lcd.write(17); // Turn backlight on
+  delay(5); // Required delay
+  lcd.print("Hello, world..."); // First line
+  lcd.write(13); // Form feed
+  lcd.print("73 DE KC3EYS"); // Second line
+  delay(3000); // Wait 3 seconds
+  //lcd.write(18); // Turn backlight off
+        
   pinMode(A0,INPUT); // Connect to a button that goes to GND on push
   digitalWrite(A0,HIGH);
-  lcd.begin(16, 2);
   PCICR |= (1 << PCIE2);
   PCMSK2 |= (1 << PCINT18) | (1 << PCINT19);
   sei();
@@ -52,12 +59,6 @@ void setup() {
   pulseHigh(FQ_UD);  // this pulse enables serial mode on the AD9850 - Datasheet page 12.
   lcd.setCursor(hertzPosition,1);    
   lcd.print(hertz);
-   // Load the stored frequency  
-  if (ForceFreq == 0) {
-    freq = String(EEPROM.read(0))+String(EEPROM.read(1))+String(EEPROM.read(2))+String(EEPROM.read(3))+String(EEPROM.read(4))+String(EEPROM.read(5))+String(EEPROM.read(6));
-    rx = freq.toInt();  
-  }
-}
 
 
 void loop() {
