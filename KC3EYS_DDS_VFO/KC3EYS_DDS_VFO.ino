@@ -15,11 +15,14 @@ Revision 2.1 - Matt Allen KC3EYS --> Removed Rotary switch code, updated to seri
 #define pulseHigh(pin) {digitalWrite(pin, HIGH); digitalWrite(pin, LOW); }
 #define TX_PIN 3
 #define LED_PIN 13
+#define ANALOG_VOLTAGE_PIN 1
 
 int_fast32_t rx=3600000; // Starting frequency of VFO
 int_fast32_t rx2=1; // variable to hold the updated frequency
 int_fast32_t increment = 10; // starting VFO update increment in HZ.
 int buttonstate = 0;
+int buttonstate1 =0;
+int buttonstate2 =0;
 String hertz = "10 Hz";
 int  hertzPosition = 5;
 byte ones,tens,hundreds,thousands,tenthousands,hundredthousands,millions ;  //Placeholders
@@ -43,9 +46,6 @@ void setup() {
   lcd.print("AD9850 DDS VFO"); // Second line
   delay(3000); // Wait 3 seconds
         
-  PCICR |= (1 << PCIE2);
-  PCMSK2 |= (1 << PCINT18) | (1 << PCINT19);
-  sei();
   pinMode(FQ_UD, OUTPUT);
   pinMode(W_CLK, OUTPUT);
   pinMode(DATA, OUTPUT);
@@ -53,17 +53,39 @@ void setup() {
   pulseHigh(RESET);
   pulseHigh(W_CLK);
   pulseHigh(FQ_UD);  // this pulse enables serial mode on the AD9850 - Datasheet page 12.
+  
+  pinMode(A0,INPUT); // Connect to a button that goes to GND on push
+  digitalWrite(A0,HIGH);
+  pinMode(A1,INPUT); // Connect to a button that goes to GND on push
+  digitalWrite(A1,HIGH);
+  pinMode(A2,INPUT); // Connect to a button that goes to GND on push
+  digitalWrite(A2,HIGH);
 }
 
 void loop() {
+
   while (Serial.available() > 0) {
     rx = Serial.parseInt();
   }
   if (rx != rx2){    
         sendFrequency(rx);
-	showFreq();
-        rx2 = rx;
+	rx2 = rx;
       }
+      
+  buttonstate = digitalRead(A0);
+  if(buttonstate == LOW) {
+        setincrement();        
+    };
+  buttonstate1 = digitalRead(A1);
+  if(buttonstate1 == LOW) {
+        rx = rx + increment;        
+    };
+  buttonstate2 = digitalRead(A2);
+  if(buttonstate2 == LOW) {
+        rx = rx - increment;        
+    };
+    
+    VFOdisplay();
 }
 
 // frequency calc from datasheet page 8 = <sys clock> * <frequency tuning word>/2^32
@@ -85,25 +107,21 @@ void tfr_byte(byte data)
   }
 };
 
-//void setincrement(){
-//  if(increment == 10){increment = 50; hertz = "50 Hz"; hertzPosition=5;}
-//  else if (increment == 50){increment = 100;  hertz = "100 Hz"; hertzPosition=4;}
-//  else if (increment == 100){increment = 500; hertz="500 Hz"; hertzPosition=4;}
-//  else if (increment == 500){increment = 1000; hertz="1 Khz"; hertzPosition=6;}
-//  else if (increment == 1000){increment = 2500; hertz="2.5 Khz"; hertzPosition=4;}
-//  else if (increment == 2500){increment = 5000; hertz="5 Khz"; hertzPosition=6;}
-//  else if (increment == 5000){increment = 10000; hertz="10 Khz"; hertzPosition=5;}
-//  else if (increment == 10000){increment = 100000; hertz="100 Khz"; hertzPosition=4;}
-//  else if (increment == 100000){increment = 1000000; hertz="1 Mhz"; hertzPosition=6;}  
-//  else{increment = 10; hertz = "10 Hz"; hertzPosition=5;};  
-//   lcd.setCursor(0,1);
-//   lcd.print("                ");
-//   lcd.setCursor(hertzPosition,1); 
-//   lcd.print(hertz); 
-//   delay(250); // Adjust this delay to speed up/slow down the button menu scroll speed.
-//}
+void setincrement(){
+  if(increment == 10){increment = 50; hertz = "50 Hz"; hertzPosition=5;}
+  else if (increment == 50){increment = 100;  hertz = "100 Hz"; hertzPosition=4;}
+  else if (increment == 100){increment = 500; hertz="500 Hz"; hertzPosition=4;}
+  else if (increment == 500){increment = 1000; hertz="1 Khz"; hertzPosition=6;}
+  else if (increment == 1000){increment = 2500; hertz="2.5 Khz"; hertzPosition=4;}
+  else if (increment == 2500){increment = 5000; hertz="5 Khz"; hertzPosition=6;}
+  else if (increment == 5000){increment = 10000; hertz="10 Khz"; hertzPosition=5;}
+  else if (increment == 10000){increment = 100000; hertz="100 Khz"; hertzPosition=4;}
+  else if (increment == 100000){increment = 1000000; hertz="1 Mhz"; hertzPosition=6;}  
+  else{increment = 10; hertz = "10 Hz"; hertzPosition=5;};  
+}
 
-void showFreq(){
+
+void VFOdisplay(){
     millions = int(rx/1000000);
     hundredthousands = ((rx/100000)%10);
     tenthousands = ((rx/10000)%10);
@@ -111,10 +129,12 @@ void showFreq(){
     hundreds = ((rx/100)%10);
     tens = ((rx/10)%10);
     ones = ((rx/1)%10);
-    lcd.write(12); delay(5);
     lcd.print("                ");
-   if (millions > 9){lcd.setCursor(0,1);}
-   else{lcd.setCursor(0,2);}
+    
+    if (millions > 9){lcd.setCursor(0,1);}
+    else{lcd.setCursor(0,2);}
+    
+    // Top Row VFO Readout
     lcd.print(millions);
     lcd.print(".");
     lcd.print(hundredthousands);
@@ -125,6 +145,13 @@ void showFreq(){
     lcd.print(tens);
     lcd.print(ones);
     lcd.print(" Mhz  ");
+    
+    // Bottom Row VFO Increment
+    lcd.setCursor(1,0);
+    lcd.print("                ");
+    lcd.setCursor(1, hertzPosition); 
+    lcd.print(hertz); 
+    delay(200); // Adjust this delay to speed up/slow down the button menu scroll speed.
     timepassed = millis();
 }
 
