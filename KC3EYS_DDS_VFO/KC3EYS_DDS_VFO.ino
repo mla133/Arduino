@@ -21,8 +21,8 @@ int_fast32_t rx=3600000; // Starting frequency of VFO
 int_fast32_t rx2=1; // variable to hold the updated frequency
 int_fast32_t increment = 10; // starting VFO update increment in HZ.
 int buttonstate = 0;
-int buttonstate1 =0;
-int buttonstate2 =0;
+int buttonstate1 = 0;
+int buttonstate2 = 0;
 String hertz = "10 Hz";
 int  hertzPosition = 5;
 byte ones,tens,hundreds,thousands,tenthousands,hundredthousands,millions ;  //Placeholders
@@ -38,13 +38,13 @@ void setup() {
   digitalWrite(TX_PIN, HIGH);
   lcd.begin(9600);
   delay(100);
-  lcd.write(12); // Clear
-  lcd.write(17); // Turn backlight on
-  delay(5); // Required delay
-  lcd.print("KC3EYS"); // First line
-  lcd.write(13); // Form feed
-  lcd.print("AD9850 DDS VFO"); // Second line
-  delay(3000); // Wait 3 seconds
+  lcd.write(12);                // Clear
+  lcd.write(17);                // Turn backlight on
+  delay(5);                     // Required delay (for the clear...)
+  lcd.print("KC3EYS");          // First line
+  lcd.write(13);                // Form feed
+  lcd.print("AD9850 DDS VFO");  // Second line
+  delay(3000);                  // Wait 3 seconds
         
   pinMode(FQ_UD, OUTPUT);
   pinMode(W_CLK, OUTPUT);
@@ -52,51 +52,58 @@ void setup() {
   pinMode(RESET, OUTPUT); 
   pulseHigh(RESET);
   pulseHigh(W_CLK);
-  pulseHigh(FQ_UD);  // this pulse enables serial mode on the AD9850 - Datasheet page 12.
-  
-  pinMode(A0,INPUT); // Connect to a button that goes to GND on push
+  pulseHigh(FQ_UD);             // this pulse enables serial mode on the AD9850 - Datasheet page 12.
+
+  // Connect to a button that goes to GND on push
+  pinMode(A0,INPUT);            
   digitalWrite(A0,HIGH);
-  pinMode(A1,INPUT); // Connect to a button that goes to GND on push
+  pinMode(A1,INPUT);
   digitalWrite(A1,HIGH);
-  pinMode(A2,INPUT); // Connect to a button that goes to GND on push
+  pinMode(A2,INPUT);
   digitalWrite(A2,HIGH);
 }
 
-void loop() {
-
-  while (Serial.available() > 0) {
-    rx = Serial.parseInt();
-  }
-  if (rx != rx2){    
-        sendFrequency(rx);
-	rx2 = rx;
-      }
+void loop() 
+{
+    while (Serial.available() > 0) 
+    {
+      rx = Serial.parseInt();
+    }
+    if (rx != rx2)
+    {    
+          sendFrequency(rx);
+  	      rx2 = rx;
+    }
       
-  buttonstate = digitalRead(A0);
-  if(buttonstate == LOW) {
-        setincrement();        
-    };
-  buttonstate1 = digitalRead(A1);
-  if(buttonstate1 == LOW) {
-        rx = rx + increment;        
-    };
-  buttonstate2 = digitalRead(A2);
-  if(buttonstate2 == LOW) {
-        rx = rx - increment;        
-    };
+    buttonstate = digitalRead(A0);
+    if(buttonstate == LOW) 
+    {
+          setincrement();        
+    }
+    buttonstate1 = digitalRead(A1);
+    if(buttonstate1 == LOW) 
+    {
+          rx = rx + increment;        
+    }
+    buttonstate2 = digitalRead(A2);
+    if(buttonstate2 == LOW) 
+    {
+          rx = rx - increment;        
+    }
     
     VFOdisplay();
 }
 
 // frequency calc from datasheet page 8 = <sys clock> * <frequency tuning word>/2^32
-void sendFrequency(double frequency) {  
+void sendFrequency(double frequency) 
+{  
   int32_t freq = frequency * 4294967295/125000000;  // note 125 MHz clock on 9850.  You can make 'slight' tuning variations here by adjusting the clock frequency.
   for (int b=0; b<4; b++, freq>>=8) {
     tfr_byte(freq & 0xFF);
   }
   tfr_byte(0x000);   // Final control byte, all 0 for 9850 chip
   pulseHigh(FQ_UD);  // Done!  Should see output
-};
+}
 
 // transfers a byte, a bit at a time, LSB first to the 9850 via serial DATA line
 void tfr_byte(byte data)
@@ -105,7 +112,7 @@ void tfr_byte(byte data)
     digitalWrite(DATA, data & 0x01);
     pulseHigh(W_CLK);   //after each bit sent, CLK is pulsed high
   }
-};
+}
 
 void setincrement(){
   if(increment == 10){increment = 50; hertz = "50 Hz"; hertzPosition=5;}
@@ -121,7 +128,8 @@ void setincrement(){
 }
 
 
-void VFOdisplay(){
+void VFOdisplay()
+{
     millions = int(rx/1000000);
     hundredthousands = ((rx/100000)%10);
     tenthousands = ((rx/10000)%10);
@@ -131,8 +139,8 @@ void VFOdisplay(){
     ones = ((rx/1)%10);
     lcd.print("                ");
     
-    if (millions > 9){lcd.setCursor(0,1);}
-    else{lcd.setCursor(0,2);}
+    if (millions > 9){setCursor(0,1);}
+    else{setCursor(0,2);}
     
     // Top Row VFO Readout
     lcd.print(millions);
@@ -147,11 +155,21 @@ void VFOdisplay(){
     lcd.print(" Mhz  ");
     
     // Bottom Row VFO Increment
-    lcd.setCursor(1,0);
+    setCursor(1,0);
     lcd.print("                ");
-    lcd.setCursor(1, hertzPosition); 
+    setCursor(1, hertzPosition); 
     lcd.print(hertz); 
     delay(200); // Adjust this delay to speed up/slow down the button menu scroll speed.
     timepassed = millis();
+}
+
+void setCursor(uint8_t row, uint8_t col)
+{
+    int position;
+    if(row==0) position = 128;
+    else if (row==1) position = 148;
+    
+    position = position + col;
+    lcd.write(position);    
 }
 
