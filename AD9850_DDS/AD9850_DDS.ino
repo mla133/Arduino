@@ -100,7 +100,7 @@ void setup() {
   lcd.print(End_Freq/1000);
   delay(3000); // Wait 3 seconds
   //lcd.write(18); // Turn backlight off
-
+  Serial.println("Hit 'enter' Key to Start Scan");
 }
 void loop() 
 {
@@ -118,7 +118,7 @@ void loop()
   }
   else  
   {
-    Serial.println("Hit 'enter' Key to Start Scan");
+    
     sendFrequency(1.0); // set AD9850 output to 1 Hz
     delay(200);
     RevOffSet = analogRead(A0);
