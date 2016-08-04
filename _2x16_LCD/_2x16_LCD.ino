@@ -1,4 +1,4 @@
-//  Parallax 27977-RT Serial LCD, backlit with Speaker demo
+//  Parallax 27977-RT Serial LCD demo
 //  Hook pin to +5v, GND, Rx pin to D6
 
 const int ledPin = 13;
