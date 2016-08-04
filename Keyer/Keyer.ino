@@ -6,6 +6,8 @@
  m0xpd
  shack.nasties 'at Gee Male dot com'
  
+ KC3EYS modified 6/28/16
+ 
  Pins 6 & 7 connected to a paddle...
    pin 6 is the 'dit' key (usually the left)
    pin 7 is the 'dah' key (usually the right)
@@ -31,7 +33,8 @@ int ditState = 0;
 int dahState = 0;
 int str8State = 0;
 unsigned sidetoneFreq=600;
-int ditLength = 75;             // dit length in milliseconds
+int wpm = 10;                    // Setting WPM spacing for dit/dah
+int ditLength = (int) 1200/wpm;  // dit length in milliseconds
 int dahLength = 3 * ditLength;
 int LastElement = 0;            // code for the last element sent...
                                 // 0 :- space
@@ -58,6 +61,7 @@ void loop(){
     digitalWrite(TxPin,HIGH);
     tone(sidetonePin,sidetoneFreq);
   }
+
   else {
     digitalWrite(TxPin,LOW);
     noTone(sidetonePin);
