@@ -18,7 +18,7 @@ void setup()
 
     analogMeter(); // Draw analogue meter
 
-    digitalMeter(); // Draw digital meter
+    //digitalMeter(); // Draw digital meter
 
     updateTime = millis(); // Next update time
 }
@@ -34,7 +34,7 @@ void loop()
     volts = (float)(5*reading)/100;
 
     //showDigital(reading);  // Update digital reading
-    showDigital(volts,0);  // Update digital reading
+    //showDigital(volts,0);  // Update digital reading
 
     plotNeedle(reading, 8); // Update analogue meter, 8ms delay per needle increment
     
@@ -71,8 +71,6 @@ void analogMeter()
     int x3 = sx2 * 100 + 120;
     int y3 = sy2 * 100 + 140;
     
-    // Will need to import fillTriangle library function from AdaFruit-GFX library to get this to work
-
     // Green zone limits
     if (i >= -50 && i < 0) {
       Tft.fillTriangle(x0, y0, x1, y1, x2, y2, GREEN);
