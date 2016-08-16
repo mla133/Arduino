@@ -206,12 +206,16 @@ public:
 	void drawLine(INT16U x0,INT16U y0,INT16U x1,INT16U y1,INT16U color);
     void drawVerticalLine(INT16U poX, INT16U poY,INT16U length,INT16U color);
     void drawHorizontalLine(INT16U poX, INT16U poY,INT16U length,INT16U color);
+    
+    void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
+    void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
     void drawRectangle(INT16U poX, INT16U poY, INT16U length,INT16U width,INT16U color);
 	
 	void drawCircle(int poX, int poY, int r,INT16U color);
     void fillCircle(int poX, int poY, int r,INT16U color);
 	
 	void drawTriangle(int poX1, int poY1, int poX2, int poY2, int poX3, int poY3, INT16U color);
+	void fillTriangle(int x0, int y0, int x1, int y1, int x2, int y2, int color);
     INT8U drawNumber(long long_num,INT16U poX, INT16U poY,INT16U size,INT16U fgcolor);
     INT8U drawFloat(float floatNumber,INT8U decimal,INT16U poX, INT16U poY,INT16U size,INT16U fgcolor);
     INT8U drawFloat(float floatNumber,INT16U poX, INT16U poY,INT16U size,INT16U fgcolor);
