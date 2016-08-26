@@ -5,7 +5,7 @@
 #ifndef MiniArDSP_h // include guard
 #define MiniArDSP_h
 
-#include "WProgram.h"
+//#include "WProgram.h"
 #include <avr/pgmspace.h>
 #include "mult16x16.h"
 #include "mult16x8.h"
