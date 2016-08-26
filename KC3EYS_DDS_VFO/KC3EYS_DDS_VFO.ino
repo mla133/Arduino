@@ -17,7 +17,7 @@ Revision 2.1 - Matt Allen KC3EYS --> Removed Rotary switch code, updated to seri
 #define LED_PIN 13
 #define ANALOG_VOLTAGE_PIN 1
 
-int_fast32_t rx=3600000; // Starting frequency of VFO
+int_fast32_t rx=7025000; // Starting frequency of VFO
 int_fast32_t rx2=1; // variable to hold the updated frequency
 int_fast32_t increment = 10; // starting VFO update increment in HZ.
 int buttonstate = 0;
@@ -29,11 +29,20 @@ byte ones,tens,hundreds,thousands,tenthousands,hundredthousands,millions ;  //Pl
 String freq; // string to hold the frequency
 int_fast32_t timepassed = millis(); // int to hold the arduino miilis since startup
 
+const char *splash =
+" _  __   _____   ____    ______  __    __   _____ \r\n"
+"| |/ /  / ____| |___ \  |  ____| \ \  / /  / ____|\r\n"
+"| ' /  | |        __) | | |__     \ \/ /  | (___  \r\n"
+"|  <   | |       |__ <  |  __|     \  /    \___ \ \r\n"
+"| . \  | |____   ___) | | |____    |  |    ____) |\r\n"
+"|_|\_\  \_____| |____/  |______|   |__|   |_____/ \r\n";
+
 SoftwareSerial lcd = SoftwareSerial(255, TX_PIN);
 
 void setup() {
   
   Serial.begin(9600);
+  Serial.print(splash);
   pinMode(TX_PIN, OUTPUT);
   digitalWrite(TX_PIN, HIGH);
   lcd.begin(9600);
@@ -45,6 +54,7 @@ void setup() {
   lcd.write(13);                // Form feed
   lcd.print("AD9850 DDS VFO");  // Second line
   delay(3000);                  // Wait 3 seconds
+  Serial.println("LCD initialized...");
         
   pinMode(FQ_UD, OUTPUT);
   pinMode(W_CLK, OUTPUT);
@@ -65,10 +75,8 @@ void setup() {
 
 void loop() 
 {
-    while (Serial.available() > 0) 
-    {
-      rx = Serial.parseInt();
-    }
+    //rx = SerialInput();
+
     if (rx != rx2)
     {    
           sendFrequency(rx);
@@ -173,3 +181,16 @@ void setCursor(uint8_t row, uint8_t col)
     lcd.write(position);    
 }
 
+int SerialInput()
+{
+    char incomingByte;
+    while (Serial.available() > 0) 
+    {
+      incomingByte = Serial.read();
+      if (incomingByte == '\n') break;   // exit after newline char
+      if (incomingByte == -1) continue;  // if no chars in buffer...Serial.read returns -1...
+      rx *= 1000;
+      rx += (incomingByte - 48);
+    }
+    return rx;
+}
