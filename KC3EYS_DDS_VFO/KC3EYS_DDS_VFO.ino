@@ -19,11 +19,11 @@ Revision 2.1 - Matt Allen KC3EYS --> Removed Rotary switch code, updated to seri
 
 int_fast32_t rx=7025000; // Starting frequency of VFO
 int_fast32_t rx2=1; // variable to hold the updated frequency
-int_fast32_t increment = 10; // starting VFO update increment in HZ.
+int_fast32_t increment = 10000; // starting VFO update increment in HZ.
 int buttonstate = 0;
 int buttonstate1 = 0;
 int buttonstate2 = 0;
-String hertz = "10 Hz";
+String hertz = "10 KHz";
 int  hertzPosition = 5;
 byte ones,tens,hundreds,thousands,tenthousands,hundredthousands,millions ;  //Placeholders
 String freq; // string to hold the frequency
