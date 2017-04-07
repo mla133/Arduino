@@ -241,8 +241,15 @@ void printLine2(char *c){
  */
 
 void updateDisplay(){
+    float ver = 0.1;
+    char *d, *e;
     sprintf(b, "%08ld", frequency);      
     sprintf(c, "%s:%.2s.%.4s", vfoActive == VFO_A ? "A" : "B" , b,  b+2);
+    
+    sprintf(d, "KC3EYS");
+    sprintf(e, " %2.1f", ver);
+    strcat(d, e);    
+
     if (isUSB)
       strcat(c, " USB");
     else
@@ -256,6 +263,7 @@ void updateDisplay(){
       strcat(c, "   ");
           
     printLine1(c);
+    printLine2(e);
 }
 
 /**
