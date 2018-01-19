@@ -33,8 +33,8 @@ void loop()
 
     volts = (float)(5*reading)/100;
 
-    //showDigital(reading);  // Update digital reading
-    //showDigital(volts,0);  // Update digital reading
+    //showDigital(reading,100);  // Update digital reading
+    showDigital(volts,100);  // Update digital reading
 
     plotNeedle(reading, 8); // Update analogue meter, 8ms delay per needle increment
     
