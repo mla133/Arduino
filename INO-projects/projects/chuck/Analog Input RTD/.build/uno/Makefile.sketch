@@ -1,0 +1,14 @@
+
+
+
+
+
+.build/uno/src/RTD_Analog_Input.cpp : src/RTD_Analog_Input.ino
+	@mkdir -p .build/uno/src
+	@echo [93msrc/RTD_Analog_Input.ino[0m
+	@/home/local/FMCNET/allenma/bin/ino preproc  -o $@ $^
+
+
+all : .build/uno/src/RTD_Analog_Input.cpp
+	@true
+
