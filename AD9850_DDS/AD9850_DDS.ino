@@ -15,9 +15,9 @@
 #define RESET 11 // Pin 11 - connect to reset pin (RST).
 #define pulseHigh(pin) {digitalWrite(pin, HIGH); digitalWrite(pin, LOW); }
 #define TxPin 6
-double Start_Freq = 2.0e6;// 6.8e6; //start Freq; in Mhz
-double End_Freq = 3.0e6;//7.425e6; //End Scan Freq; in Mhz
-double Step_Freq = 25000; //Step Freq; in Hz
+double Start_Freq = 7.0e6;// 6.8e6; //start Freq; in Mhz
+double End_Freq = 7.3e6;//7.425e6; //End Scan Freq; in Mhz
+double Step_Freq = 10000; //Step Freq; in Hz
 double current_freq;
 float minSWR = 999;
 float maxSWR = 0;
@@ -117,22 +117,8 @@ void loop()
     RunCurve = !RunCurve;
   }
   else  
-  {
-    
-    sendFrequency(1.0); // set AD9850 output to 1 Hz
-    delay(200);
-    RevOffSet = analogRead(A0);
-    FwdOffSet = analogRead(A1);
-    delay(2000);
-    lcd.write(12);
-    delay(5);
-    lcd.print(minSWR);
-    lcd.print("/");
-    lcd.print(maxSWR);
-    lcd.write(13);
-    lcd.print(int(minFreq/1000));
-    lcd.print("/");
-    lcd.print(int(maxFreq/1000)); 
+  {  
+    sendFrequency(7000000.0); // set AD9850 output to 1 Hz
   }
   while (RunCurve)
   {
@@ -160,15 +146,15 @@ bool PrintNextPoint(bool RunCurve)
   // Read the forawrd and reverse voltages
   for (int i=0; i<70; i++) 
   {
-    REV += (analogRead(A0)-RevOffSet);
-    FWD += (analogRead(A1)-FwdOffSet);
+    //REV += (analogRead(A3)-RevOffSet);
+    //FWD += (analogRead(A2)-FwdOffSet);
+
+    REV += analogRead(A3);
+    FWD += analogRead(A2);
   }
   REV = REV/70.0;
   FWD = FWD/70.0;
-  REV = (FwdOpAmpGain*REV)/RevOpAmpGain; // apply Op Amp Gain loop compensation
-  REV = CorrectReading(REV);// now using table apply Small Signal correction value
-  FWD = (RevSCVal*FWD)/FwdSCVal;// apply "Short Circuit" offset
-  FWD = CorrectReading(FWD);// now using table apply Small Signal correction value
+  
   if(REV>=FWD)
   {
     // To avoid a divide by zero or negative VSWR then set to max 999
@@ -201,13 +187,6 @@ bool PrintNextPoint(bool RunCurve)
   Serial.print(FWD);
   Serial.print(" REV: ");
   Serial.print(REV);
-//  Serial.print(" RevOffSet: ");
-//  Serial.print(RevOffSet);
-//  Serial.print(" FwdOffSet: ");
-//  Serial.print(FwdOffSet);
-//  Serial.print("; Ohms: ");
-//  Serial.print(EffOhms);
-//  Serial.println("");
   Serial.print(" MIN: ");
   Serial.print(minSWR);
   Serial.print(" MAX: ");

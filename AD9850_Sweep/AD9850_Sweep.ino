@@ -34,6 +34,11 @@ int mode = 0;
 
 void setup()
 {
+    pinMode(FQ_UD, OUTPUT);
+    pinMode(W_CLK, OUTPUT);
+    pinMode(DATA, OUTPUT);
+    pinMode(RESET, OUTPUT);
+  
   Serial.begin(9600);
   Serial.println("Serial comms - 9600, NewLine (0x0A) denotes end of input");
   Serial.println("f 10000 - set frequency");
@@ -60,7 +65,8 @@ void loop()
       }
     //AD9850.wr_serial(0,freqValue);
     Serial.print("Sending: ");
-    Serial.println(freqValue);
+    Serial.print(freqValue);
+    Serial.println(" kHz");
     sendFrequency(freqValue);
   }
   while (Serial.available())
@@ -134,7 +140,8 @@ void loop()
     bufPos = 0;
     //AD9850.wr_serial(0,freqValue);
     Serial.print("Sending: ");
-    Serial.println(freqValue);
+    Serial.print(freqValue);
+    Serial.println(" kHz");
     sendFrequency(freqValue);
   }
 }

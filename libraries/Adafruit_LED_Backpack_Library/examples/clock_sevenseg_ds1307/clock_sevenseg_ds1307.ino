@@ -17,10 +17,11 @@
 //
 // Written by Tony DiCola for Adafruit Industries.
 // Released under a MIT license: https://opensource.org/licenses/MIT
+
 #include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <RTClib.h>
 #include "Adafruit_LEDBackpack.h"
-#include "Adafruit_GFX.h"
-#include "RTClib.h"
 
 
 // Set to false to display time in 12 hour format, or true to use 24 hour:
@@ -114,7 +115,7 @@ void loop() {
   // Do 24 hour to 12 hour format conversion when required.
   if (!TIME_24_HOUR) {
     // Handle when hours are past 12 by subtracting 12 hours (1200 value).
-    if (hours > 11) {
+    if (hours > 12) {
       displayValue -= 1200;
     }
     // Handle hour 0 (midnight) being shown as 12.

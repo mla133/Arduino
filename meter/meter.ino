@@ -28,13 +28,13 @@ void loop()
   if (updateTime <= millis()) {
     updateTime = millis() + 500;
 
-//  reading = random(25, 75); // Test with random value
-    reading = map(analogRead(A8),0,1023,0,100); // Test with value form Analog 8
+  reading = random(25, 75); // Test with random value
+//    reading = map(analogRead(A8),0,1023,0,100); // Test with value form Analog 8
 
     volts = (float)(5*reading)/100;
 
     //showDigital(reading,100);  // Update digital reading
-    showDigital(volts,100);  // Update digital reading
+    //showDigital(volts,100);  // Update digital reading
 
     plotNeedle(reading, 8); // Update analogue meter, 8ms delay per needle increment
     
@@ -107,11 +107,11 @@ void analogMeter()
       x0 = sx * (100 + tl + 10) + 120;
       y0 = sy * (100 + tl + 10) + 140;
       switch (i / 25) {
-        case -2: Tft.drawString("0V", x0, y0 - 12, 1,BLACK); break;
-        case -1: Tft.drawString("1.25V", x0, y0 - 9, 1, BLACK); break;
-        case 0: Tft.drawString("2.5V", x0, y0 - 6, 1, BLACK); break;
-        case 1: Tft.drawString("3.75V", x0, y0 - 9, 1, BLACK); break;
-        case 2: Tft.drawString("5V", x0, y0 - 12, 1, BLACK); break;
+        case -2: Tft.drawString("1", x0, y0 - 12, 1,BLACK); break;
+        case -1: Tft.drawString("1.5", x0, y0 - 9, 1, BLACK); break;
+        case 0: Tft.drawString("2:1", x0-8, y0 - 10, 1, BLACK); break;
+        case 1: Tft.drawString("3", x0, y0 - 9, 1, BLACK); break;
+        case 2: Tft.drawString("5", x0, y0 - 12, 1, BLACK); break;
       }
     }
     
@@ -124,7 +124,7 @@ void analogMeter()
     if (i < 50) Tft.drawLine(x0, y0, x1, y1, BLACK);
   }
   
-  Tft.drawString("A8", 5 + 230 - 40, 119 - 20, 2, BLACK); // Units at bottom right
+  Tft.drawString("SWR", 5 + 230 - 40, 119 - 20, 2, BLACK); // Units at bottom right
   Tft.drawRectangle(5, 3, 230, 119, BLACK); // Draw bezel line
   
   plotNeedle(0,0); // Put meter needle at 0
