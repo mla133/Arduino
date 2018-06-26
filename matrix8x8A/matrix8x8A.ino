@@ -104,21 +104,21 @@ void loop() {
   for (int8_t x=0; x>=-36; x--) {
     matrix.clear();
     matrix.setCursor(x,0);
-    matrix.print("Hiya");
+    matrix.print("Matrix 8x8");
     matrix.writeDisplay();
     delay(100);
   }
   for (int8_t x=0; x>=-36; x--) {
     matrix.clear();
     matrix.setCursor(x,0);
-    matrix.print("Love");
+    matrix.print("ver 1.0");
     matrix.writeDisplay();
     delay(100);
   }
   for (int8_t x=0; x>=-36; x--) {
     matrix.clear();
     matrix.setCursor(x,0);
-    matrix.print("Ya!!!");
+    matrix.print("4/5/18");
     matrix.writeDisplay();
     delay(100);
   }
